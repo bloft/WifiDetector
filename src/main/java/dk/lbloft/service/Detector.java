@@ -2,6 +2,7 @@ package dk.lbloft.service;
 
 import com.google.common.base.Splitter;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import dk.lbloft.util.Replacer;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
@@ -32,8 +33,9 @@ public class Detector extends AbstractExecutionThreadService {
 
     @Override
     protected void startUp() throws Exception {
-        log.info("Running command: " + config.getProperty("command"));
-        ProcessBuilder pb = new ProcessBuilder(config.getProperty("command"));
+        String cmd = Replacer.on().replace(config).build(config.getProperty("command"));
+        log.info("Running command: " + cmd);
+        ProcessBuilder pb = new ProcessBuilder(cmd);
         process = pb.start();
         stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
     }

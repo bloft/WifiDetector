@@ -24,7 +24,17 @@ public class Main {
 
     public static void main(String ... args) throws IOException {
         Properties config = new Properties();
-        config.load(new FileReader("config.properties"));
+        switch(args.length) {
+            case 0:
+                config.load(new FileReader("config.properties"));
+                break;
+            case 1:
+                config.load(new FileReader(args[0]));
+                break;
+            default:
+                System.err.println("Only 0 or 1 args are allowed");
+                System.exit(1);
+        }
 
         LogManager.getLogManager().readConfiguration();
 
