@@ -1,0 +1,55 @@
+plugins {
+	id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+version = '1.0.0'
+
+mainClassName = 'dk.lbloft.Main'
+
+repositories {
+    mavenCentral()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+	compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
+	compile 'com.google.guava:guava:21.0'
+	compile 'org.projectlombok:lombok:1.16.8'
+	
+	compile 'org.slf4j:slf4j-api:1.7.21'
+	compile 'org.apache.logging.log4j:log4j-core:2.7'
+	compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.7'
+
+	testCompile 'junit:junit:4.12'
+}
+
+idea {
+	module {
+		downloadJavadoc = true
+		downloadSources = true
+	}
+	project {
+		ipr.withXml { provider ->
+			def node = provider.asNode()
+
+			// Enable annotation processors (lombok)
+			def compilerConfiguration = node.component.find { it.'@name' == 'CompilerConfiguration'}
+			compilerConfiguration.annotationProcessing.replaceNode {
+				annotationProcessing {
+					profile(name: 'Default', default: true, enabled: true) {
+						processorPath(useClasspath: true)
+					}
+				}
+			}
+		
+			// Change output dir to build/idea	
+			def projectRootManager = node.component.find { it.'@name' == 'ProjectRootManager'}
+			if(projectRootManager.output) {
+				projectRootManager.output.@url = 'file://$PROJECT_DIR$/build/idea'
+			}
+		}
+	}
+}
