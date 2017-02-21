@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,7 +36,7 @@ public class Detector extends AbstractExecutionThreadService {
     protected void startUp() throws Exception {
         String cmd = Replacer.on().replace(config).build(config.getProperty("command"));
         log.info("Running command: " + cmd);
-        ProcessBuilder pb = new ProcessBuilder(cmd);
+        ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
         process = pb.start();
         stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
     }
@@ -50,7 +51,12 @@ public class Detector extends AbstractExecutionThreadService {
                 send(mac);
             }
         }
-        if(isRunning()) throw new Exception("Eof reached, this indicates that the process has died");
+        if(isRunning()) {
+            BufferedReader stderr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            stderr.lines().forEach(log::error);
+            stderr.close();
+            throw new Exception("Eof reached, this indicates that the process has died");
+        }
     }
 
     @Override
